@@ -26,7 +26,7 @@ export interface WeightLog {
 }
 
 // Challenge dates
-export const CHALLENGE_START = new Date('2024-12-23')
+export const CHALLENGE_START = new Date('2024-12-29')
 export const CHALLENGE_END = new Date('2025-07-07')
 export const TOTAL_WEEKS = 28
 
@@ -58,7 +58,7 @@ export function isPastWeek(weekNum: number): boolean {
 
 export function isDateInChallenge(dateStr: string): boolean {
   const date = new Date(dateStr)
-  const startDate = new Date('2024-12-23')
+  const startDate = new Date('2024-12-29')
   const endDate = new Date('2025-07-07')
   return date >= startDate && date <= endDate
 }
