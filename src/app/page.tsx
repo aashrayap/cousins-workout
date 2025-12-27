@@ -25,7 +25,7 @@ export default function Home() {
 
   const { users, loading: usersLoading, addUser, updateUser } = useUsers()
   const { checkins, toggleCheckin } = useCheckins(selectedUserId, weekNum)
-  const { checkins: allCheckins } = useAllCheckins(weekNum)
+  const { checkins: allCheckins, refetch: refetchAllCheckins } = useAllCheckins(weekNum)
   const { logs, addLog, latestWeight } = useWeightLogs(selectedUserId)
 
   const selectedUser = users.find(u => u.id === selectedUserId) || null
@@ -51,6 +51,12 @@ export default function Home() {
 
   const handleLogWeight = async (weight: number, date: string) => {
     await addLog(weight, date)
+  }
+
+  const handleToggleCheckin = async (date: string, field: 'workout' | 'ate_clean' | 'steps') => {
+    await toggleCheckin(date, field)
+    // Refresh leaderboard data
+    refetchAllCheckins()
   }
 
   if (usersLoading) {
@@ -89,7 +95,7 @@ export default function Home() {
                 weekNum={weekNum}
                 checkins={checkins}
                 onWeekChange={setWeekNum}
-                onToggle={toggleCheckin}
+                onToggle={handleToggleCheckin}
               />
               <WeightLog
                 logs={logs}

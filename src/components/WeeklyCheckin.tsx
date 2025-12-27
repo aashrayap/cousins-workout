@@ -1,9 +1,8 @@
 'use client'
 
 import { Checkin, getWeekDates, getWeekNumber, formatDate, isCurrentWeek, isPastWeek, TOTAL_WEEKS } from '@/lib/types'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface WeeklyCheckinProps {
@@ -14,10 +13,10 @@ interface WeeklyCheckinProps {
 }
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-const ROWS: { key: 'workout' | 'ate_clean' | 'steps'; label: string }[] = [
-  { key: 'workout', label: 'Workout' },
-  { key: 'ate_clean', label: 'Clean' },
-  { key: 'steps', label: 'Steps' }
+const ROWS: { key: 'workout' | 'ate_clean' | 'steps'; label: string; icon: string }[] = [
+  { key: 'workout', label: 'Workout', icon: '💪' },
+  { key: 'ate_clean', label: 'Clean', icon: '🥗' },
+  { key: 'steps', label: 'Steps', icon: '👟' }
 ]
 
 export function WeeklyCheckin({
@@ -55,7 +54,7 @@ export function WeeklyCheckin({
   const weekTotal = totals.workout + totals.ate_clean + totals.steps
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Week Navigation */}
       <div className="flex items-center justify-between">
         <Button
@@ -66,10 +65,10 @@ export function WeeklyCheckin({
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <div className="text-sm font-medium">
-          {formatDate(start)} - {formatDate(end)}
-          {isCurrent && <span className="text-muted-foreground ml-1">(This Week)</span>}
-          {isPast && <span className="text-muted-foreground ml-1">(Week {weekNum})</span>}
+        <div className="text-sm font-medium text-center">
+          <div>{formatDate(start)} - {formatDate(end)}</div>
+          {isCurrent && <div className="text-xs text-muted-foreground">This Week</div>}
+          {isPast && <div className="text-xs text-muted-foreground">Week {weekNum}</div>}
         </div>
         <Button
           variant="ghost"
@@ -82,49 +81,83 @@ export function WeeklyCheckin({
       </div>
 
       {/* Grid */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr>
-              <th className="text-left font-medium py-1 pr-2"></th>
-              {DAYS.map((day, i) => (
-                <th key={i} className="text-center font-medium py-1 px-1 min-w-[32px]">
-                  {day}
-                </th>
-              ))}
-              <th className="text-center font-medium py-1 pl-2">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ROWS.map(row => (
-              <tr key={row.key}>
-                <td className="text-left py-1 pr-2 text-muted-foreground">{row.label}</td>
-                {weekDates.map((date, i) => {
-                  const c = checkinMap.get(date)
-                  const checked = c ? c[row.key] : false
-                  return (
-                    <td key={i} className="text-center py-1 px-1">
-                      <Checkbox
-                        checked={checked}
-                        disabled={!canEdit}
-                        onCheckedChange={() => onToggle(date, row.key)}
-                        className={cn(
-                          'h-5 w-5',
-                          isPast && 'opacity-50'
-                        )}
-                      />
-                    </td>
-                  )
-                })}
-                <td className="text-center py-1 pl-2 font-medium">{totals[row.key]}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="rounded-lg border bg-card overflow-hidden">
+        {/* Header */}
+        <div className="grid grid-cols-[80px_repeat(7,1fr)_50px] bg-muted/50 border-b">
+          <div className="p-2 text-xs font-medium text-muted-foreground"></div>
+          {DAYS.map((day, i) => (
+            <div key={i} className="p-2 text-center text-xs font-medium text-muted-foreground">
+              {day}
+            </div>
+          ))}
+          <div className="p-2 text-center text-xs font-medium text-muted-foreground">Tot</div>
+        </div>
+
+        {/* Rows */}
+        {ROWS.map((row, rowIndex) => (
+          <div
+            key={row.key}
+            className={cn(
+              "grid grid-cols-[80px_repeat(7,1fr)_50px]",
+              rowIndex < ROWS.length - 1 && "border-b"
+            )}
+          >
+            <div className="p-2 flex items-center gap-1.5 text-sm">
+              <span>{row.icon}</span>
+              <span className="text-muted-foreground">{row.label}</span>
+            </div>
+            {weekDates.map((date, i) => {
+              const c = checkinMap.get(date)
+              const checked = c ? c[row.key] : false
+              return (
+                <button
+                  key={i}
+                  onClick={() => canEdit && onToggle(date, row.key)}
+                  disabled={!canEdit}
+                  className={cn(
+                    "p-2 flex items-center justify-center transition-colors",
+                    canEdit && "hover:bg-muted/50 cursor-pointer",
+                    !canEdit && "cursor-default",
+                    isPast && "opacity-60"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "w-7 h-7 rounded-md flex items-center justify-center transition-all",
+                      checked
+                        ? "bg-green-500 text-white"
+                        : "bg-muted/50 border border-border"
+                    )}
+                  >
+                    {checked && <Check className="h-4 w-4" />}
+                  </div>
+                </button>
+              )
+            })}
+            <div className="p-2 flex items-center justify-center">
+              <span className={cn(
+                "text-sm font-semibold",
+                totals[row.key] === 7 && "text-green-600",
+                totals[row.key] === 0 && "text-muted-foreground"
+              )}>
+                {totals[row.key]}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="text-center text-sm text-muted-foreground">
-        Total this week: <span className="font-medium text-foreground">{weekTotal}</span> checks
+      {/* Total */}
+      <div className="text-center">
+        <span className="text-sm text-muted-foreground">Total: </span>
+        <span className={cn(
+          "text-lg font-bold",
+          weekTotal >= 15 && "text-green-600",
+          weekTotal === 0 && "text-muted-foreground"
+        )}>
+          {weekTotal}
+        </span>
+        <span className="text-sm text-muted-foreground"> / 21</span>
       </div>
     </div>
   )
