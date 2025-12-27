@@ -55,3 +55,10 @@ export function isCurrentWeek(weekNum: number): boolean {
 export function isPastWeek(weekNum: number): boolean {
   return weekNum < getWeekNumber(new Date())
 }
+
+export function isDateInChallenge(dateStr: string): boolean {
+  const date = new Date(dateStr)
+  const startDate = new Date('2024-12-23')
+  const endDate = new Date('2025-07-07')
+  return date >= startDate && date <= endDate
+}
