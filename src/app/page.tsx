@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getWeekNumber, User } from '@/lib/types'
 import { useUsers } from '@/hooks/useUsers'
 import { useCheckins, useAllCheckins } from '@/hooks/useCheckins'
@@ -18,10 +18,15 @@ import { LogWeightModal } from '@/components/LogWeightModal'
 
 export default function Home() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  const [weekNum, setWeekNum] = useState(getWeekNumber(new Date()))
+  const [weekNum, setWeekNum] = useState<number | null>(null)
   const [showAddUser, setShowAddUser] = useState(false)
   const [showEditProfile, setShowEditProfile] = useState(false)
   const [showLogWeight, setShowLogWeight] = useState(false)
+
+  // Set week number on client side only to avoid SSR timezone issues
+  useEffect(() => {
+    setWeekNum(getWeekNumber(new Date()))
+  }, [])
 
   const { users, loading: usersLoading, addUser, updateUser } = useUsers()
   const { checkins, toggleCheckin } = useCheckins(selectedUserId, weekNum)
@@ -59,7 +64,7 @@ export default function Home() {
     refetchAllCheckins()
   }
 
-  if (usersLoading) {
+  if (usersLoading || weekNum === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>

@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Checkin, getWeekDates } from '@/lib/types'
 
-export function useCheckins(userId: string | null, weekNum: number) {
+export function useCheckins(userId: string | null, weekNum: number | null) {
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchCheckins = useCallback(async () => {
-    if (!userId) {
+    if (!userId || weekNum === null) {
       setCheckins([])
       setLoading(false)
       return
@@ -82,11 +82,17 @@ export function useCheckins(userId: string | null, weekNum: number) {
   return { checkins, loading, toggleCheckin, refetch: fetchCheckins }
 }
 
-export function useAllCheckins(weekNum: number) {
+export function useAllCheckins(weekNum: number | null) {
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchCheckins = useCallback(async () => {
+    if (weekNum === null) {
+      setCheckins([])
+      setLoading(false)
+      return
+    }
+
     const { start, end } = getWeekDates(weekNum)
     const startStr = start.toISOString().split('T')[0]
     const endStr = end.toISOString().split('T')[0]
